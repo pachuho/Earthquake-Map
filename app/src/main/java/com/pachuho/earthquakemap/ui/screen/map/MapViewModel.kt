@@ -1,4 +1,4 @@
-package com.pachuho.earthquakemap.ui.screen
+package com.pachuho.earthquakemap.ui.screen.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

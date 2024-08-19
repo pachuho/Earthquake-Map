@@ -19,6 +19,7 @@ logging-interceptor = "4.12.0"
 retrofit = "2.11.0"
 ksp = "2.0.0-1.0.23"
 room = "2.6.1"
+material3-android = "1.2.1"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -53,6 +54,7 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3-android" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
