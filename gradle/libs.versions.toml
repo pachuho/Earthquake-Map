@@ -8,6 +8,7 @@ espresso-core = "3.6.1"
 lifecycle-runtime = "2.8.4"
 activity-compose = "1.9.1"
 compose-bom = "2023.08.00"
+lottie-compose = "6.5.0"
 map-sdk = "3.19.1"
 moshi-kotlin = "1.15.0"
 naver-map-compose = "1.4.1"
@@ -30,6 +31,7 @@ lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtim
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie-compose" }
 map-sdk = { module = "com.naver.maps:map-sdk", version.ref = "map-sdk" }
 moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi-kotlin" }
 naver-map-compose = { module = "io.github.fornewid:naver-map-compose", version.ref = "naver-map-compose" }
