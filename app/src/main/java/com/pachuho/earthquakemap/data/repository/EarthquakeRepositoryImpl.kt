@@ -4,6 +4,7 @@ import android.accounts.NetworkErrorException
 import com.pachuho.earthquakemap.data.db.EarthquakeDao
 import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.data.remote.EarthquakeService
+import com.pachuho.earthquakemap.data.utils.NetworkFailureException
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
@@ -42,15 +43,13 @@ class EarthquakeRepositoryImpl @Inject constructor(
                             earthquakes.addAll(it)
                         } ?: run {
                             Timber.d("getAllEarthquakes, empty")
-                            isDownloading = false
+                            throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
                         }
                     }
 
                     false -> {
-                        Timber.d("getAllEarthquakes, isFail")
-                        isDownloading = false
-                        Timber.e("[${response.code()}] - ${response.raw()}")
-//                        throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
+                        Timber.e("response failure")
+                        throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
                     }
                 }
             } catch (e: Exception) {
