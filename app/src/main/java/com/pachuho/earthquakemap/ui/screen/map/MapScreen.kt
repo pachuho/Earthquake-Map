@@ -80,10 +80,6 @@ fun MapScreen(
                     Log.e("asdf", "MapScreen: Loading")
                 }
 
-                is UiState.Error -> {
-                    Log.e("asdf", "MapScreen, Error: ${uiState.value}")
-                }
-
                 is UiState.Success -> {
                     uiState.value.successOrNull()?.let { earthquakes ->
                         earthquakes
@@ -91,11 +87,11 @@ fun MapScreen(
                                 Marker(
                                     state = MarkerState(
                                         position = LatLng(
-                                            earthquake.lat,
-                                            earthquake.lon
+                                            earthquake.LAT,
+                                            earthquake.LON
                                         )
                                     ),
-                                    captionText = earthquake.mag.toString()
+                                    captionText = earthquake.MAG.toString()
                                 )
                             }
                     }

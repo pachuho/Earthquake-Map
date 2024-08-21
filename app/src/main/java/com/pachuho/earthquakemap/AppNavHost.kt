@@ -5,7 +5,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.pachuho.earthquakemap.ui.screen.launcher.LauncherScreen
 import com.pachuho.earthquakemap.ui.screen.map.MapScreen
 
 @Composable
@@ -14,14 +13,11 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Launcher.route
+        startDestination = Screen.Map.route
     ) {
         composable(
             route = Screen.Launcher.route
         ) {
-            LauncherScreen {
-                navController.navigate(Screen.Map.route)
-            }
         }
 
         composable(

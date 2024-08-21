@@ -21,6 +21,7 @@ retrofit = "2.11.0"
 ksp = "2.0.0-1.0.23"
 room = "2.6.1"
 material3-android = "1.2.1"
+timber = "5.0.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -36,6 +37,7 @@ map-sdk = { module = "com.naver.maps:map-sdk", version.ref = "map-sdk" }
 moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi-kotlin" }
 naver-map-compose = { module = "io.github.fornewid:naver-map-compose", version.ref = "naver-map-compose" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 ui = { group = "androidx.compose.ui", name = "ui" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
