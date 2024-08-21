@@ -1,4 +1,4 @@
-package com.pachuho.lol.data.utils
+package com.pachuho.earthquakemap.data.utils
 
 
 class EmptyBodyException(message: String? = "") : Exception(message)

@@ -1,37 +1,69 @@
 package com.pachuho.earthquakemap.data.repository
 
-import com.pachuho.earthquakemap.BuildConfig
+import android.accounts.NetworkErrorException
+import com.pachuho.earthquakemap.data.db.EarthquakeDao
 import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.data.remote.EarthquakeService
-import com.pachuho.earthquakemap.ui.util.UiState
-import com.pachuho.lol.data.utils.EmptyBodyException
-import com.pachuho.lol.data.utils.NetworkFailureException
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import timber.log.Timber
 import javax.inject.Inject
 
 class EarthquakeRepositoryImpl @Inject constructor(
-    private val earthquakeService: EarthquakeService
+    private val earthquakeService: EarthquakeService,
+    private val earthquakeDao: EarthquakeDao
 ) : EarthquakeRepository {
 
-    override fun getEarthquakes(oauthKey: String): Flow<UiState<List<Earthquake>>> =
-        flow<UiState<List<Earthquake>>> {
-//        val earthquakeInDB = earthquakeDao.getEarthquakes()
-//        if (earthquakeInDB.isNotEmpty()) {
-//            emit(UiState.Success(earthquakeInDB))
-//            return@flow
-//        }
-
-            val response = earthquakeService.fetchEarthquakes(oauthKey)
-            if (response.isSuccessful) {
-                val earthquakes: List<Earthquake> =
-                    response.body()?.tbEqkKenvinfo?.rows
-                        ?: throw EmptyBodyException("[${response.code()}] - ${response.raw()}")
-//            earthquakeDao.insertEarthQuakes(earthquakes)
-                emit(UiState.Success(earthquakes))
-            } else {
-                throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
+    override fun getEarthquakes(oauthKey: String) = flow {
+        if (earthquakeDao.getDataCount() > 0) { // 데이터가 있는 경우
+            earthquakeDao.getLatestEarthquake()?.let { earthquake ->
+                // 최신 데이터인 경우
+                if (earthquake.EQ_ID == earthquakeService.fetchEarthquakes(oauthKey, 1, 1)
+                        .body()?.tbEqkKenvinfo?.rows?.first()?.EQ_ID
+                ) {
+                    emit(earthquakeDao.getEarthquakes())
+                    return@flow
+                }
             }
-        }.catch { emit(UiState.Error(it)) }
+        }
+
+        var isDownloading = true
+        var index = 1
+        val earthquakes = mutableListOf<Earthquake>()
+        Timber.d("getAllEarthquakes, start")
+        while (isDownloading) {
+            try {
+                val response = earthquakeService.fetchEarthquakes(oauthKey, index, index + 999)
+                index += 1000
+
+                when (response.isSuccessful) {
+                    true -> {
+                        Timber.d("getAllEarthquakes, isSuccessful")
+                        response.body()?.tbEqkKenvinfo?.rows?.let {
+                            earthquakes.addAll(it)
+                        } ?: run {
+                            Timber.d("getAllEarthquakes, empty")
+                            isDownloading = false
+                        }
+                    }
+
+                    false -> {
+                        Timber.d("getAllEarthquakes, isFail")
+                        isDownloading = false
+                        Timber.e("[${response.code()}] - ${response.raw()}")
+//                        throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.d("getAllEarthquakes, catch: $e")
+                isDownloading = false
+
+                if (earthquakes.isNotEmpty()) {
+                    earthquakeDao.insertEarthquakes(earthquakes)
+                    emit(earthquakes)
+                } else {
+                    throw NetworkErrorException("[404] - ${e.message}")
+                }
+            }
+        }
+    }
 }

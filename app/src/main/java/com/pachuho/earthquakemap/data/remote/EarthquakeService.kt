@@ -7,8 +7,10 @@ import retrofit2.http.Path
 
 interface EarthquakeService {
 
-    @GET("{oauth}/json/TbEqkKenvinfo/1/1000/")
+    @GET("{oauth}/json/TbEqkKenvinfo/{start}/{end}/")
     suspend fun fetchEarthquakes(
-        @Path("oauth") oauth: String
+        @Path("oauth") oauth: String,
+        @Path("start") start: Int,
+        @Path("end") end: Int,
     ): Response<EarthquakeResponse>
 }

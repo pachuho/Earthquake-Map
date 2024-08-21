@@ -22,6 +22,12 @@ object ApiModule {
 
     @Provides
     @Singleton
+    fun provideMoshi(): Moshi = Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
         loggerInterceptor: LoggerInterceptor
     ): OkHttpClient {
@@ -32,7 +38,10 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        moshi: Moshi
+    ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
@@ -45,8 +54,4 @@ object ApiModule {
     fun provideChampionService(retrofit: Retrofit): EarthquakeService {
         return retrofit.create(EarthquakeService::class.java)
     }
-
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
 }

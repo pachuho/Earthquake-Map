@@ -5,5 +5,5 @@ import com.pachuho.earthquakemap.ui.util.UiState
 import kotlinx.coroutines.flow.Flow
 
 interface EarthquakeRepository {
-    fun getEarthquakes(oauthKey: String): Flow<UiState<List<Earthquake>>>
+    fun getEarthquakes(oauthKey: String): Flow<List<Earthquake>>
 }
