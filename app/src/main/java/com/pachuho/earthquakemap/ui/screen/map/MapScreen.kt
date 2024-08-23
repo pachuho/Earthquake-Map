@@ -1,19 +1,15 @@
 package com.pachuho.earthquakemap.ui.screen.map
 
 import android.accounts.NetworkErrorException
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
@@ -29,8 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,11 +40,11 @@ import com.naver.maps.map.compose.rememberCameraPositionState
 import com.naver.maps.map.util.MarkerIcons
 import com.pachuho.earthquakemap.R
 import com.pachuho.earthquakemap.data.model.Earthquake
+import com.pachuho.earthquakemap.ui.screen.map.components.BaseIcon
+import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
 import com.pachuho.earthquakemap.ui.theme.MagGreen
 import com.pachuho.earthquakemap.ui.theme.MagOrange
 import com.pachuho.earthquakemap.ui.theme.MagRed
-import com.pachuho.earthquakemap.ui.util.SpacerLarge
-import com.pachuho.earthquakemap.ui.util.SpacerMedium
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
 import timber.log.Timber
@@ -154,67 +148,6 @@ private fun getMakerColor(mag: Double): Color {
 }
 
 @Composable
-fun MapInfo() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(horizontal = 30.dp)
-    ) {
-        SpacerMedium()
-
-        Text(
-            text = stringResource(R.string.service_explain),
-            style = MaterialTheme.typography.titleLarge,
-        )
-
-        SpacerMedium()
-
-        Text(
-            text = stringResource(R.string.service_explain_comment),
-            style = MaterialTheme.typography.bodyLarge,
-            overflow = TextOverflow.Ellipsis,
-        )
-
-        SpacerLarge()
-
-        Text(
-            text = stringResource(R.string.earthquake_mag_color),
-            style = MaterialTheme.typography.titleLarge,
-        )
-
-        SpacerMedium()
-
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            LegendForMarker(MagGreen, "1.0 ~ 2.9")
-            LegendForMarker(MagOrange, "3.0 ~ 3.9")
-            LegendForMarker(MagRed, "4.0 ~ 10.0")
-        }
-
-        SpacerLarge()
-
-        Text(
-            text = stringResource(R.string.data_source),
-            style = MaterialTheme.typography.titleLarge,
-        )
-
-        SpacerMedium()
-
-        Text(
-            text = stringResource(R.string.seoul_open_api_name),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-
-        SpacerLarge()
-    }
-}
-
-
-@Composable
 fun RangeSlider(title: String) {
     var sliderPosition by remember { mutableStateOf(0f..100f) }
 
@@ -266,9 +199,3 @@ class MapScreenPreviewParameterProvider :
 //) {
 //    MapScreen(uiState = uiState)
 //}
-
-@Composable
-@Preview(showBackground = true)
-private fun MapLegendPreview() {
-    MapInfo()
-}
