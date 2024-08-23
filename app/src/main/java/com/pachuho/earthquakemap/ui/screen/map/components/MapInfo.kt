@@ -48,7 +48,6 @@ fun MapInfo() {
         Text(
             text = stringResource(R.string.service_explain_comment),
             style = MaterialTheme.typography.bodyLarge,
-            overflow = TextOverflow.Ellipsis,
         )
 
         SpacerLarge()

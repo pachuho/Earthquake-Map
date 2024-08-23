@@ -21,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,18 +32,14 @@ import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.compose.CameraPositionState
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
-import com.naver.maps.map.compose.Marker
-import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
-import com.naver.maps.map.util.MarkerIcons
 import com.pachuho.earthquakemap.R
 import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.ui.screen.map.components.BaseIcon
 import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
-import com.pachuho.earthquakemap.ui.theme.MagGreen
-import com.pachuho.earthquakemap.ui.theme.MagOrange
-import com.pachuho.earthquakemap.ui.theme.MagRed
+import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
+import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
 import timber.log.Timber
@@ -65,6 +60,7 @@ fun MapRoute(
 private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     val context = LocalContext.current
     var isShowingInfo by remember { mutableStateOf(false) }
+    var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val seoul = LatLng(37.532600, 127.024612)
@@ -89,17 +85,9 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                         Timber.e("MapScreen:, Success")
                         earthquakes
                             .forEach { earthquake ->
-                                Marker(
-                                    state = MarkerState(
-                                        position = LatLng(
-                                            earthquake.LAT,
-                                            earthquake.LON
-                                        )
-                                    ),
-                                    icon = MarkerIcons.BLACK,
-                                    iconTintColor = getMakerColor(earthquake.MAG),
-                                    captionText = earthquake.MAG.toString()
-                                )
+                                MapMarker(earthquake) {
+                                    currentShowingMarkerInfo = it
+                                }
                             }
                     }
                 }
@@ -136,14 +124,16 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
             MapInfo()
         }
     }
-}
 
-private fun getMakerColor(mag: Double): Color {
-    return when(mag) {
-        in 0.0..2.9 -> MagGreen
-        in 3.0..3.9 -> MagOrange
-        in 4.0..10.0 -> MagRed
-        else -> Color.Black
+    currentShowingMarkerInfo?.let {
+        ModalBottomSheet(
+            sheetState = bottomSheetState,
+            onDismissRequest = {
+                currentShowingMarkerInfo = null
+            }
+        ) {
+            MarkerInfo(it)
+        }
     }
 }
 
