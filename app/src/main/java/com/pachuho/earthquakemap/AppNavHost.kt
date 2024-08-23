@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.pachuho.earthquakemap.ui.screen.map.MapScreen
+import com.pachuho.earthquakemap.ui.screen.map.MapRoute
 
 @Composable
 fun AppNavHost(
@@ -23,7 +23,7 @@ fun AppNavHost(
         composable(
             route = Screen.Map.route
         ) {
-            MapScreen()
+            MapRoute()
         }
     }
 }
