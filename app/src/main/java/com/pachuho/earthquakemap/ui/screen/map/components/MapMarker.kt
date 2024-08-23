@@ -16,30 +16,33 @@ import com.pachuho.earthquakemap.ui.theme.MagRed
 @Composable
 fun MapMarker(
     earthquake: Earthquake,
+    filterMagRange: ClosedFloatingPointRange<Float>,
     onClick: (Earthquake) -> Unit
 ) {
-    Marker(
-        state = MarkerState(
-            position = LatLng(
-                earthquake.LAT,
-                earthquake.LON
-            )
-        ),
-        icon = MarkerIcons.BLACK,
-        iconTintColor = getColorByMag(earthquake.MAG),
-        captionText = earthquake.MAG.toString(),
-        onClick = {
-            onClick(earthquake)
-            true
-        }
-    )
+    if(earthquake.MAG.toFloat() in filterMagRange) {
+        Marker(
+            state = MarkerState(
+                position = LatLng(
+                    earthquake.LAT,
+                    earthquake.LON
+                )
+            ),
+            icon = MarkerIcons.BLACK,
+            iconTintColor = getColorByMag(earthquake.MAG),
+            captionText = earthquake.MAG.toString(),
+            onClick = {
+                onClick(earthquake)
+                true
+            }
+        )
+    }
 }
 
 fun getColorByMag(mag: Double): Color {
-    return when(mag) {
-        in 0.0..2.9 -> MagGreen
-        in 3.0..3.9 -> MagOrange
-        in 4.0..10.0 -> MagRed
+    return when (mag) {
+        in 0.0..3.9 -> MagGreen
+        in 4.0..5.9 -> MagOrange
+        in 6.0..9.9 -> MagRed
         else -> Color.Black
     }
 }

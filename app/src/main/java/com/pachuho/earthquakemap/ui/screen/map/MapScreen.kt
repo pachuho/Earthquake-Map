@@ -2,13 +2,10 @@ package com.pachuho.earthquakemap.ui.screen.map
 
 import android.accounts.NetworkErrorException
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -34,11 +30,12 @@ import com.pachuho.earthquakemap.ui.screen.map.components.ActionIcons
 import com.pachuho.earthquakemap.ui.screen.map.components.MapActionIcons
 import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
 import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
+import com.pachuho.earthquakemap.ui.screen.map.components.MapSettings
 import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
+import com.pachuho.earthquakemap.ui.screen.map.components.SettingsResult
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
 import timber.log.Timber
-import kotlin.math.floor
 
 @Composable
 fun MapRoute(
@@ -55,8 +52,11 @@ fun MapRoute(
 private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     val context = LocalContext.current
     var isShowingInfo by remember { mutableStateOf(false) }
+    var isShowingSettings by remember { mutableStateOf(false) }
     var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var magSliderPosition by remember { mutableStateOf(1.0f..10.0f) }
 
     val seoul = LatLng(37.532600, 127.024612)
     val cameraPositionState: CameraPositionState = rememberCameraPositionState {
@@ -80,7 +80,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                         Timber.e("MapScreen:, Success")
                         earthquakes
                             .forEach { earthquake ->
-                                MapMarker(earthquake) {
+                                MapMarker(earthquake, magSliderPosition) {
                                     currentShowingMarkerInfo = it
                                 }
                             }
@@ -99,7 +99,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
             when(iconGroup) {
                 is ActionIcons.Info -> isShowingInfo = !isShowingInfo
                 is ActionIcons.Location -> {}
-                is ActionIcons.Settings -> {}
+                is ActionIcons.Settings -> isShowingSettings = !isShowingSettings
             }
 
         }
@@ -116,6 +116,24 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
         }
     }
 
+    if (isShowingSettings) {
+        ModalBottomSheet(
+            sheetState = bottomSheetState,
+            onDismissRequest = {
+                isShowingSettings = false
+            }
+        ) {
+            MapSettings(magSliderPosition) { settingResult ->
+                when(settingResult) {
+                    is SettingsResult.Magnitude -> {
+                        magSliderPosition = settingResult.value
+                    }
+                    is SettingsResult.MapType -> {}
+                }
+            }
+        }
+    }
+
     currentShowingMarkerInfo?.let {
         ModalBottomSheet(
             sheetState = bottomSheetState,
@@ -125,42 +143,6 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
         ) {
             MarkerInfo(it)
         }
-    }
-}
-
-@Composable
-fun RangeSlider(title: String) {
-    var sliderPosition by remember { mutableStateOf(0f..100f) }
-
-    Column {
-        Text(
-            text = title,
-            fontWeight = FontWeight.Bold
-        )
-        RangeSlider(
-            value = sliderPosition.start..sliderPosition.endInclusive,
-            onValueChange = { range ->
-                val startValue = range.start
-                val endValue = range.endInclusive
-
-                if (startValue != endValue) {
-                    sliderPosition = startValue..endValue
-                }
-            },
-            valueRange = 0f..100f,
-            steps = 9,
-            onValueChangeFinished = {
-                // todo add data changed
-            }
-        )
-
-        Text(
-            text = "${floor(sliderPosition.start).div(10)} ~ ${
-                floor(sliderPosition.endInclusive).div(
-                    10
-                )
-            }"
-        )
     }
 }
 
