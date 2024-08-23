@@ -3,12 +3,8 @@ package com.pachuho.earthquakemap.ui.screen.map
 import android.accounts.NetworkErrorException
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RangeSlider
@@ -22,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
@@ -34,9 +29,9 @@ import com.naver.maps.map.compose.CameraPositionState
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
-import com.pachuho.earthquakemap.R
 import com.pachuho.earthquakemap.data.model.Earthquake
-import com.pachuho.earthquakemap.ui.screen.map.components.BaseIcon
+import com.pachuho.earthquakemap.ui.screen.map.components.ActionIcons
+import com.pachuho.earthquakemap.ui.screen.map.components.MapActionIcons
 import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
 import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
@@ -91,26 +86,22 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                             }
                     }
                 }
+
                 is UiState.Error -> {}
             }
         }
 
-        Row(
+        MapActionIcons(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(10.dp),
-        ) {
-            BaseIcon(
-                imageVector = Icons.Default.LocationOn,
-                contentDescription = stringResource(R.string.my_location)
-            ) {}
-
-            BaseIcon(
-                imageVector = Icons.Default.Info,
-                contentDescription = stringResource(R.string.explain)
-            ) {
-                isShowingInfo = !isShowingInfo
+                .padding(12.dp)
+        ) { iconGroup ->
+            when(iconGroup) {
+                is ActionIcons.Info -> isShowingInfo = !isShowingInfo
+                is ActionIcons.Location -> {}
+                is ActionIcons.Settings -> {}
             }
+
         }
     }
 
