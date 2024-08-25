@@ -10,4 +10,7 @@
     <string name="data_source">데이터 출처</string>
     <string name="seoul_open_api_name">서울 열린데이터 광장</string>
     <string name="info">정보정보</string>
+    <string name="setting_map">지도 설정</string>
+    <string name="earthquake_mag">지진 규모</string>
+    <string name="map_type">지도 타입</string>
 </resources>

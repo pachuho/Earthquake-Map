@@ -15,5 +15,5 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun provideLOLRepository(lolRepositoryImpl: EarthquakeRepositoryImpl): EarthquakeRepository
+    abstract fun provideEarthquakeRepository(earthquakeRepositoryImpl: EarthquakeRepositoryImpl): EarthquakeRepository
 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +24,8 @@ import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.compose.CameraPositionState
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.compose.MapProperties
+import com.naver.maps.map.compose.MapType
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
 import com.pachuho.earthquakemap.data.model.Earthquake
@@ -32,6 +35,8 @@ import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
 import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.MapSettings
 import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
+import com.pachuho.earthquakemap.ui.screen.map.components.SettingMapType
+import com.pachuho.earthquakemap.ui.screen.map.components.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.screen.map.components.SettingsResult
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
@@ -57,6 +62,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var magSliderPosition by remember { mutableStateOf(1.0f..10.0f) }
+    var currentMapType by remember { mutableStateOf(SettingMapType.Basic) }
 
     val seoul = LatLng(37.532600, 127.024612)
     val cameraPositionState: CameraPositionState = rememberCameraPositionState {
@@ -68,6 +74,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     ) {
         NaverMap(
             modifier = Modifier.fillMaxSize(),
+            properties = MapProperties(mapType = currentMapType.find()),
             cameraPositionState = cameraPositionState
         ) {
             when (uiState) {
@@ -123,12 +130,14 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                 isShowingSettings = false
             }
         ) {
-            MapSettings(magSliderPosition) { settingResult ->
+            MapSettings(magSliderPosition, currentMapType) { settingResult ->
                 when(settingResult) {
                     is SettingsResult.Magnitude -> {
                         magSliderPosition = settingResult.value
                     }
-                    is SettingsResult.MapType -> {}
+                    is SettingsResult.MapType -> {
+                        currentMapType = settingResult.mapType
+                    }
                 }
             }
         }
