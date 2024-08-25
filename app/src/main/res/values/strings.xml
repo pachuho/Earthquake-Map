@@ -13,4 +13,5 @@
     <string name="setting_map">지도 설정</string>
     <string name="earthquake_mag">지진 규모</string>
     <string name="map_type">지도 타입</string>
+    <string name="generation_date">발생 시기</string>
 </resources>

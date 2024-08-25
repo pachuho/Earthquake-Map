@@ -35,9 +35,9 @@ import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
 import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.MapSettings
 import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
-import com.pachuho.earthquakemap.ui.screen.map.components.SettingMapType
-import com.pachuho.earthquakemap.ui.screen.map.components.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.screen.map.components.SettingsResult
+import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType
+import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
 import timber.log.Timber
