@@ -9,7 +9,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,7 +24,6 @@ import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.compose.CameraPositionState
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.compose.MapProperties
-import com.naver.maps.map.compose.MapType
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
 import com.pachuho.earthquakemap.data.model.Earthquake
@@ -39,7 +37,9 @@ import com.pachuho.earthquakemap.ui.screen.map.components.SettingsResult
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.util.UiState
+import com.pachuho.earthquakemap.ui.util.showToast
 import com.pachuho.earthquakemap.ui.util.successOrNull
+import com.pachuho.earthquakemap.ui.util.toLocalDateTime
 import timber.log.Timber
 
 @Composable
@@ -103,7 +103,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                 .align(Alignment.TopEnd)
                 .padding(12.dp)
         ) { iconGroup ->
-            when(iconGroup) {
+            when (iconGroup) {
                 is ActionIcons.Info -> isShowingInfo = !isShowingInfo
                 is ActionIcons.Location -> {}
                 is ActionIcons.Settings -> isShowingSettings = !isShowingSettings
@@ -124,22 +124,32 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     }
 
     if (isShowingSettings) {
-        ModalBottomSheet(
-            sheetState = bottomSheetState,
-            onDismissRequest = {
-                isShowingSettings = false
-            }
-        ) {
-            MapSettings(magSliderPosition, currentMapType) { settingResult ->
-                when(settingResult) {
-                    is SettingsResult.Magnitude -> {
-                        magSliderPosition = settingResult.value
-                    }
-                    is SettingsResult.MapType -> {
-                        currentMapType = settingResult.mapType
+        uiState.successOrNull()?.let { earthquakes ->
+            ModalBottomSheet(
+                sheetState = bottomSheetState,
+                onDismissRequest = {
+                    isShowingSettings = false
+                }
+            ) {
+
+                val firstLocalDateTime = earthquakes
+                    .filter { it.ORIGIN_TIME.toString().length == 14 }
+                    .minBy { it.ORIGIN_TIME }.ORIGIN_TIME.toLocalDateTime()
+                MapSettings(firstLocalDateTime, magSliderPosition, currentMapType) { settingResult ->
+                    when (settingResult) {
+                        is SettingsResult.Magnitude -> {
+                            magSliderPosition = settingResult.value
+                        }
+
+                        is SettingsResult.MapType -> {
+                            currentMapType = settingResult.mapType
+                        }
                     }
                 }
+
             }
+        } ?: run {
+            context.showToast("잠시 후 시도해 주세요.")
         }
     }
 
