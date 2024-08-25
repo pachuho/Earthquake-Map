@@ -34,6 +34,7 @@ import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.MapSettings
 import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
 import com.pachuho.earthquakemap.ui.screen.map.components.SettingsResult
+import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingDateType
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.util.UiState
@@ -62,6 +63,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var magSliderPosition by remember { mutableStateOf(1.0f..10.0f) }
+    var currentDateType by remember { mutableStateOf(SettingDateType.OneYear) }
     var currentMapType by remember { mutableStateOf(SettingMapType.Basic) }
 
     val seoul = LatLng(37.532600, 127.024612)
@@ -135,14 +137,18 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                 val firstLocalDateTime = earthquakes
                     .filter { it.ORIGIN_TIME.toString().length == 14 }
                     .minBy { it.ORIGIN_TIME }.ORIGIN_TIME.toLocalDateTime()
-                MapSettings(firstLocalDateTime, magSliderPosition, currentMapType) { settingResult ->
+                MapSettings(firstLocalDateTime, magSliderPosition, currentDateType, currentMapType) { settingResult ->
                     when (settingResult) {
                         is SettingsResult.Magnitude -> {
                             magSliderPosition = settingResult.value
                         }
 
+                        is SettingsResult.DateType -> {
+                            currentDateType = settingResult.value
+                        }
+
                         is SettingsResult.MapType -> {
-                            currentMapType = settingResult.mapType
+                            currentMapType = settingResult.value
                         }
                     }
                 }
