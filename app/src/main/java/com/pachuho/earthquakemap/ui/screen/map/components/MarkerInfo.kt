@@ -20,6 +20,7 @@ import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.ui.util.SpacerLarge
 import com.pachuho.earthquakemap.ui.util.SpacerMedium
 import com.pachuho.earthquakemap.ui.util.toLocalDateTimeAsString
+import kotlin.math.roundToInt
 
 @Composable
 fun MarkerInfo(earthquake: Earthquake) {
@@ -57,7 +58,7 @@ fun MarkerInfo(earthquake: Earthquake) {
             )
             Text(
                 modifier = Modifier.padding(start = 10.dp),
-                text = earthquake.MAG.toString(),
+                text = ((earthquake.MAG * 10.0).roundToInt()/ 10.0).toString(),
                 color = getColorByMag(earthquake.MAG),
                 style = MaterialTheme.typography.headlineMedium,
             )
@@ -109,7 +110,7 @@ fun MarkerInfo(earthquake: Earthquake) {
             )
             Text(
                 modifier = Modifier.padding(start = 10.dp),
-                text = "${earthquake.LAT} ${earthquake.LON}",
+                text = "${(earthquake.LAT * 100.0) / 100.0} ${(earthquake.LON  * 100.0) / 100.0}",
                 style = MaterialTheme.typography.titleMedium,
             )
         }

@@ -19,6 +19,7 @@ import com.pachuho.earthquakemap.ui.theme.MagRed
 import com.pachuho.earthquakemap.ui.util.toLocalDateTime
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalNaverMapApi::class)
 @Composable
@@ -47,7 +48,7 @@ fun MapMarker(
             ),
             icon = MarkerIcons.BLACK,
             iconTintColor = getColorByMag(earthquake.MAG),
-            captionText = earthquake.MAG.toString(),
+            captionText = ((earthquake.MAG * 10.0).roundToInt()/ 10.0).toString(),
             alpha = alpha.value,
             onClick = {
                 onClick(earthquake)
