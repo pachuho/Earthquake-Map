@@ -118,4 +118,7 @@ dependencies {
 
     // Timber
     implementation(libs.timber)
+
+    // Permission
+    implementation(libs.tedpermission.coroutine)
 }
