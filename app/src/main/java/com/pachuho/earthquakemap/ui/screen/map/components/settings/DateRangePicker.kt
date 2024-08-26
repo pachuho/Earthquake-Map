@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import com.pachuho.earthquakemap.R
 import com.pachuho.earthquakemap.ui.util.toLocalDateTime
 import com.pachuho.earthquakemap.ui.util.toMillis
+import com.pachuho.earthquakemap.ui.util.toLocalDateTimeAsLong
+import com.pachuho.earthquakemap.ui.util.toLong
+import timber.log.Timber
 import java.util.*
 
 @Composable
@@ -21,48 +24,74 @@ fun DateRangePicker(
     minDateTime: Long,
     startDateTime: Long,
     endDateTime: Long,
-    onDateSelected: (DateSelect) -> Unit
+    onDisMiss: () -> Unit,
+    onDateSelected: (Long, Long) -> Unit
 ) {
     var showStartDateDialog by remember { mutableStateOf(false) }
     var showEndDateDialog by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            modifier = Modifier.clickable { showStartDateDialog = true }
-        ) {
-            Text(
-                text = "${startDateTime.toLocalDateTime().year}${stringResource(R.string.year)}",
-                style = MaterialTheme.typography.headlineSmall,
-            )
+    var currentStartDateTime by remember { mutableLongStateOf(startDateTime) }
+    var currentEndDateTime by remember { mutableLongStateOf(endDateTime) }
 
-            Text(
-                text = "${startDateTime.toLocalDateTime().monthValue}${stringResource(R.string.month)}",
-                style = MaterialTheme.typography.headlineSmall,
-            )
+    Timber.e("currentStartDateTime: $currentStartDateTime")
+    Timber.e("currentEndDateTime: $currentEndDateTime")
+
+    Column(
+        modifier = Modifier
+            .wrapContentWidth()
+            .padding(vertical = 30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            modifier = Modifier.padding(horizontal = 4.dp),
+            text = "조회 기간 설정",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Row(
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .clickable { showStartDateDialog = true }
+            ) {
+                DateText("${currentStartDateTime.toLocalDateTime().year}${stringResource(R.string.year)}")
+                DateText("${currentStartDateTime.toLocalDateTime().monthValue}${stringResource(R.string.month)}")
+                DateText("${currentStartDateTime.toLocalDateTime().dayOfMonth}${stringResource(R.string.day)}")
+            }
+
+            DateText("~")
+
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .clickable { showEndDateDialog = true }
+            ) {
+                DateText("${currentEndDateTime.toLocalDateTime().year}${stringResource(R.string.year)}")
+                DateText("${currentEndDateTime.toLocalDateTime().monthValue}${stringResource(R.string.month)}")
+                DateText("${currentEndDateTime.toLocalDateTime().dayOfMonth}${stringResource(R.string.day)}")
+            }
         }
 
-        Text(
-            text = "~",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(8.dp)
-        )
-
         Row(
-            modifier = Modifier.clickable { showStartDateDialog = true }
+            modifier = Modifier.wrapContentWidth(),
+            horizontalArrangement = Arrangement.Center,
         ) {
+            Button(onClick = {
+                onDisMiss()
+            }) {
+                Text(text = stringResource(R.string.cancel))
+            }
 
-            Text(
-                text = "${endDateTime.toLocalDateTime().year}${stringResource(R.string.year)}",
-                style = MaterialTheme.typography.headlineSmall,
-            )
-            Text(
-                text = "${endDateTime.toLocalDateTime().monthValue}${stringResource(R.string.month)}",
-                style = MaterialTheme.typography.headlineSmall,
-            )
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Button(onClick = {
+                onDateSelected(currentStartDateTime, currentEndDateTime)
+            }) {
+                Text(text = stringResource(R.string.confirm))
+            }
         }
     }
 
@@ -70,10 +99,15 @@ fun DateRangePicker(
     if (showStartDateDialog) {
         DatePickerDialog(
             startYear = minDateTime.toLocalDateTime().year,
-            currentDate = startDateTime,
+            currentDate = currentStartDateTime,
             onClickConfirm = {
                 showStartDateDialog = false
-                onDateSelected(DateSelect.StartDateTime(it))
+
+                diffStartAndEnd(true, it, currentEndDateTime) { newStart, newEnd ->
+                    currentStartDateTime = newStart
+                    currentEndDateTime = newEnd
+                }
+                Timber.e("onClickConfirm, currentStartDateTime: $currentStartDateTime, currentEndDateTime: $currentEndDateTime")
             },
             onDisMiss = {
                 showStartDateDialog = false
@@ -83,17 +117,58 @@ fun DateRangePicker(
 
     if (showEndDateDialog) {
         DatePickerDialog(
-            startYear = minDateTime.toLocalDateTime().year,
-            currentDate = endDateTime,
+            startYear = currentStartDateTime.toLocalDateTime().year,
+            currentDate = currentEndDateTime,
             onClickConfirm = {
                 showEndDateDialog = false
-                onDateSelected(DateSelect.EndDateTime(it))
+
+                diffStartAndEnd(false, currentStartDateTime, it) { newStart, newEnd ->
+                    currentStartDateTime = newStart
+                    currentEndDateTime = newEnd
+                }
+                Timber.e("onClickConfirm, currentStartDateTime: $currentStartDateTime, currentEndDateTime: $currentEndDateTime")
             },
             onDisMiss = {
                 showEndDateDialog = false
             }
         )
     }
+}
+
+private fun diffStartAndEnd(
+    isStart: Boolean,
+    start: Long,
+    end: Long,
+    onResult: (newStart: Long, newEnd: Long) -> Unit
+) {
+    var newStartDateTime = start.toLocalDateTime()
+    var newEndDateTime = end.toLocalDateTime()
+
+    if (isStart) {
+        if (!newStartDateTime.isBefore(newEndDateTime)) {
+            newEndDateTime = newStartDateTime.plusDays(1)
+        }
+    } else {
+        if (!newEndDateTime.isAfter(newStartDateTime)) {
+            newStartDateTime = newEndDateTime.minusDays(1)
+        }
+    }
+
+    val newStartMillis = newStartDateTime.toLong()
+    val newEndMillis = newEndDateTime.toLong()
+
+    return onResult(newStartMillis, newEndMillis)
+}
+
+@Composable
+private fun DateText(
+    text: String
+) {
+    Text(
+        modifier = Modifier.padding(horizontal = 4.dp),
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,7 +216,7 @@ fun DatePickerDialog(
 
             Button(onClick = {
                 datePickerState.selectedDateMillis?.let { selectedDateMillis ->
-                    onClickConfirm(selectedDateMillis)
+                    onClickConfirm(selectedDateMillis.toLocalDateTimeAsLong())
                 }
             }) {
                 Text(text = stringResource(R.string.confirm))
@@ -150,10 +225,29 @@ fun DatePickerDialog(
     }
 }
 
+@Composable
+@Preview(showBackground = true)
+fun MarkerDatePickerPreview() {
+    val minDateTime by remember { mutableLongStateOf(201602230145) }
+    var startDateTime by remember { mutableLongStateOf(201602230145) }
+    var endDateTime by remember { mutableLongStateOf(202408230145) }
 
-sealed class DateSelect {
-    data class StartDateTime(val dateTime: Long) : DateSelect()
-    data class EndDateTime(val dateTime: Long) : DateSelect()
+    Timber.e("startDateTime: $startDateTime")
+    Timber.e("endDateTime: $endDateTime")
+    DateRangePicker(
+        minDateTime = minDateTime,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        onDisMiss = {
+            Timber.e("Dismiss")
+        },
+        onDateSelected = { start, end ->
+            Timber.e("onDateSelected, startDateTime: $startDateTime")
+            Timber.e("onDateSelected, endDateTime: $endDateTime")
+            startDateTime = start
+            endDateTime = end
+        }
+    )
 }
 
 @Composable
@@ -176,24 +270,4 @@ fun EndDatePickerDialogPreview() {
         onClickConfirm = {},
         onDisMiss = {}
     )
-}
-
-@Composable
-@Preview(showBackground = true)
-fun MarkerDatePickerPreview() {
-    val minDateTime by remember { mutableLongStateOf(201602230145) }
-    var startDateTime by remember { mutableLongStateOf(201602230145) }
-    var endDateTime by remember { mutableLongStateOf(202408230145) }
-
-    DateRangePicker(minDateTime, startDateTime, endDateTime) { dateSelect ->
-        when (dateSelect) {
-            is DateSelect.StartDateTime -> {
-                startDateTime = dateSelect.dateTime
-            }
-
-            is DateSelect.EndDateTime -> {
-                endDateTime = dateSelect.dateTime
-            }
-        }
-    }
 }

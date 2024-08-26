@@ -12,9 +12,13 @@ import com.naver.maps.map.compose.Marker
 import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.util.MarkerIcons
 import com.pachuho.earthquakemap.data.model.Earthquake
+import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingDateType
 import com.pachuho.earthquakemap.ui.theme.MagGreen
 import com.pachuho.earthquakemap.ui.theme.MagOrange
 import com.pachuho.earthquakemap.ui.theme.MagRed
+import com.pachuho.earthquakemap.ui.util.toLocalDateTime
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalNaverMapApi::class)
 @Composable
@@ -50,6 +54,30 @@ fun MapMarker(
                 true
             }
         )
+    }
+}
+
+fun getShowingMarker(
+    currentDateType: SettingDateType,
+    startDateTime: Long,
+    endDateTime: Long,
+    originTime: Long
+): Boolean {
+    val inputDateTime = originTime.toLocalDateTime()
+    val currentDateTime = LocalDateTime.now()
+    val daysDifference = ChronoUnit.DAYS.between(inputDateTime, currentDateTime)
+    val weeksDifference = ChronoUnit.WEEKS.between(inputDateTime, currentDateTime)
+    val monthsDifference = ChronoUnit.MONTHS.between(inputDateTime, currentDateTime)
+    val yearsDifference = ChronoUnit.YEARS.between(inputDateTime, currentDateTime)
+
+    return when(currentDateType) {
+        SettingDateType.OneDay -> { daysDifference <= 1 }
+        SettingDateType.OneWeek -> { weeksDifference <= 1}
+        SettingDateType.OneMonth -> { monthsDifference <= 1}
+        SettingDateType.OneYear -> { yearsDifference <= 1 }
+        SettingDateType.Custom -> {
+            originTime in (startDateTime..endDateTime)
+        }
     }
 }
 

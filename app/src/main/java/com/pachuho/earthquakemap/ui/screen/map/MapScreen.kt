@@ -15,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,6 +25,8 @@ import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.compose.MapProperties
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
+import com.pachuho.earthquakemap.data.datasource.SettingResult
+import com.pachuho.earthquakemap.data.datasource.Settings
 import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.ui.screen.map.components.ActionIcons
 import com.pachuho.earthquakemap.ui.screen.map.components.MapActionIcons
@@ -33,14 +34,11 @@ import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
 import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.MapSettings
 import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
-import com.pachuho.earthquakemap.ui.screen.map.components.SettingsResult
-import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingDateType
-import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType
+import com.pachuho.earthquakemap.ui.screen.map.components.getShowingMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.showToast
 import com.pachuho.earthquakemap.ui.util.successOrNull
-import com.pachuho.earthquakemap.ui.util.toLocalDateTime
 import timber.log.Timber
 
 @Composable
@@ -48,23 +46,33 @@ fun MapRoute(
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    MapScreen(uiState.value)
-    uiState.value.successOrNull()?.let {
+    val settingFlow = viewModel.settingsFlow.collectAsStateWithLifecycle().value
+
+    Timber.e("setting: $settingFlow")
+    MapScreen(uiState.value, settingFlow) { result ->
+        when (result) {
+            is SettingResult.DateType -> SettingResult.DateType(result.dateType)
+            is SettingResult.DateStartAndEnd -> SettingResult.DateStartAndEnd(result.start, result.end)
+            is SettingResult.MagnitudeRange -> SettingResult.MagnitudeRange(result.start, result.end)
+            is SettingResult.MapType -> SettingResult.MapType(result.mapType)
+        }.let {
+            viewModel.updateSetting(it)
+        }
     }
 }
 
 @OptIn(ExperimentalNaverMapApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun MapScreen(uiState: UiState<List<Earthquake>>) {
+private fun MapScreen(
+    uiState: UiState<List<Earthquake>>,
+    settings: Settings,
+    onSettingResult: (SettingResult) -> Unit
+) {
     val context = LocalContext.current
     var isShowingInfo by remember { mutableStateOf(false) }
     var isShowingSettings by remember { mutableStateOf(false) }
     var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    var magSliderPosition by remember { mutableStateOf(1.0f..10.0f) }
-    var currentDateType by remember { mutableStateOf(SettingDateType.OneYear) }
-    var currentMapType by remember { mutableStateOf(SettingMapType.Basic) }
 
     val seoul = LatLng(37.532600, 127.024612)
     val cameraPositionState: CameraPositionState = rememberCameraPositionState {
@@ -76,7 +84,7 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
     ) {
         NaverMap(
             modifier = Modifier.fillMaxSize(),
-            properties = MapProperties(mapType = currentMapType.find()),
+            properties = MapProperties(mapType = settings.mapType.find()),
             cameraPositionState = cameraPositionState
         ) {
             when (uiState) {
@@ -88,8 +96,9 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                     uiState.successOrNull()?.let { earthquakes ->
                         Timber.e("MapScreen:, Success")
                         earthquakes
+                            .filter { getShowingMarker(settings.dateType, settings.dateStart, settings.dateEnd, it.ORIGIN_TIME) }
                             .forEach { earthquake ->
-                                MapMarker(earthquake, magSliderPosition) {
+                                MapMarker(earthquake, settings.magStart..settings.magEnd) {
                                     currentShowingMarkerInfo = it
                                 }
                             }
@@ -133,24 +142,15 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
                     isShowingSettings = false
                 }
             ) {
-
-                val firstLocalDateTime = earthquakes
-                    .filter { it.ORIGIN_TIME.toString().length == 14 }
-                    .minBy { it.ORIGIN_TIME }.ORIGIN_TIME.toLocalDateTime()
-                MapSettings(firstLocalDateTime, magSliderPosition, currentDateType, currentMapType) { settingResult ->
-                    when (settingResult) {
-                        is SettingsResult.Magnitude -> {
-                            magSliderPosition = settingResult.value
-                        }
-
-                        is SettingsResult.DateType -> {
-                            currentDateType = settingResult.value
-                        }
-
-                        is SettingsResult.MapType -> {
-                            currentMapType = settingResult.value
-                        }
-                    }
+                MapSettings(
+                    minDateTime = settings.dateMin,
+                    startDateTime = settings.dateStart,
+                    endDateTime = settings.dateEnd,
+                    currentMagSliderPosition = settings.magStart..settings.magEnd,
+                    currentDateType = settings.dateType,
+                    currentMapType = settings.mapType
+                ) { settingResult ->
+                    onSettingResult(settingResult)
                 }
 
             }
@@ -170,20 +170,3 @@ private fun MapScreen(uiState: UiState<List<Earthquake>>) {
         }
     }
 }
-
-class MapScreenPreviewParameterProvider :
-    PreviewParameterProvider<UiState<List<Earthquake>>> {
-    override val values = sequenceOf(
-        UiState.Loading,
-        UiState.Success(emptyList<Earthquake>()),
-        UiState.Error(NetworkErrorException("network Error 404"))
-    )
-}
-
-//@Composable
-//@Preview
-//private fun MapScreenPreview(
-//    @PreviewParameter(MapScreenPreviewParameterProvider::class) uiState: UiState<List<Earthquake>>
-//) {
-//    MapScreen(uiState = uiState)
-//}

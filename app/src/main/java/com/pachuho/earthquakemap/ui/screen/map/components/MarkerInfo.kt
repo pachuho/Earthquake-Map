@@ -17,11 +17,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pachuho.earthquakemap.data.model.Earthquake
-import com.pachuho.earthquakemap.ui.theme.Orange300
-import com.pachuho.earthquakemap.ui.theme.Orange400
 import com.pachuho.earthquakemap.ui.util.SpacerLarge
 import com.pachuho.earthquakemap.ui.util.SpacerMedium
-import com.pachuho.earthquakemap.ui.util.formatDateTime
+import com.pachuho.earthquakemap.ui.util.toLocalDateTimeAsString
 
 @Composable
 fun MarkerInfo(earthquake: Earthquake) {
@@ -94,7 +92,7 @@ fun MarkerInfo(earthquake: Earthquake) {
             )
             Text(
                 modifier = Modifier.padding(start = 10.dp),
-                text = earthquake.ORIGIN_TIME.formatDateTime(),
+                text = earthquake.ORIGIN_TIME.toLocalDateTimeAsString(),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -162,6 +160,7 @@ fun MarkerInfo(earthquake: Earthquake) {
         Text(
             text = earthquake.NOTE1,
             style = MaterialTheme.typography.bodyLarge,
+            softWrap = true,
         )
 
         SpacerLarge()
@@ -182,7 +181,7 @@ private fun MarkerInfoPreview() {
             LON = 126.31,
             MAG = 2.1,
             ORIGIN_AREA = "충남 서산시 북북서쪽 23km 해역",
-            NOTE1 = "지진피해 없을 것으로 예상됨",
+            NOTE1 = "지진피해 없을 것으로 예상됨, 위 자료는 미지질조사소(USGS) 분석결과임, 위 자료는 미지질조사소(USGS) 분석결과임",
             ISSHOW = "Y",
             REGDATE = "2024-08-23 01:46:06.0",
             KMA_EQ_NO = "2024005830",
