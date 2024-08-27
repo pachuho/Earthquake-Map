@@ -1,6 +1,5 @@
 package com.pachuho.earthquakemap.ui.screen.map
 
-import android.accounts.NetworkErrorException
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -61,7 +60,7 @@ fun MapRoute(
     }
 }
 
-@OptIn(ExperimentalNaverMapApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapScreen(
     uiState: UiState<List<Earthquake>>,
@@ -74,39 +73,11 @@ private fun MapScreen(
     var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val seoul = LatLng(37.532600, 127.024612)
-    val cameraPositionState: CameraPositionState = rememberCameraPositionState {
-        position = CameraPosition(seoul, 7.0)
-    }
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        NaverMap(
-            modifier = Modifier.fillMaxSize(),
-            properties = MapProperties(mapType = settings.mapType.find()),
-            cameraPositionState = cameraPositionState
-        ) {
-            when (uiState) {
-                is UiState.Loading -> {
-                    Timber.e("MapScreen: Loading")
-                }
-
-                is UiState.Success -> {
-                    uiState.successOrNull()?.let { earthquakes ->
-                        Timber.e("MapScreen:, Success")
-                        earthquakes
-                            .filter { getShowingMarker(settings.dateType, settings.dateStart, settings.dateEnd, it.ORIGIN_TIME) }
-                            .forEach { earthquake ->
-                                MapMarker(earthquake, settings.magStart..settings.magEnd) {
-                                    currentShowingMarkerInfo = it
-                                }
-                            }
-                    }
-                }
-
-                is UiState.Error -> {}
-            }
+        EarthquakeMap(uiState, settings) { earthquake ->
+            currentShowingMarkerInfo = earthquake
         }
 
         MapActionIcons(
@@ -169,4 +140,60 @@ private fun MapScreen(
             MarkerInfo(it)
         }
     }
+}
+
+@OptIn(ExperimentalNaverMapApi::class)
+@Composable
+private fun EarthquakeMap(
+    uiState: UiState<List<Earthquake>>,
+    settings: Settings,
+    onMarkerClick: (Earthquake) -> Unit
+) {
+    Timber.e("EarthquakeMap")
+
+    val seoul = LatLng(37.532600, 127.024612)
+    val cameraPositionState: CameraPositionState = rememberCameraPositionState {
+        position = CameraPosition(seoul, 7.0)
+    }
+
+    NaverMap(
+        modifier = Modifier.fillMaxSize(),
+        properties = MapProperties(mapType = settings.mapType.find()),
+        cameraPositionState = cameraPositionState
+    ) {
+        when (uiState) {
+            is UiState.Loading -> {
+                Timber.e("MapScreen: Loading")
+            }
+
+            is UiState.Success -> {
+                Timber.e("MapScreen: Success")
+                uiState.successOrNull()?.let { earthquakes ->
+                        MapMarkers(earthquakes, settings) { earthquake ->
+                            onMarkerClick(earthquake)
+                        }
+                }
+            }
+
+            is UiState.Error -> {}
+        }
+    }
+}
+
+@Composable
+private fun MapMarkers(
+    earthquakes: List<Earthquake>,
+    settings: Settings,
+    onMarkerClick: (Earthquake) -> Unit
+) {
+    Timber.e("MapMarkers")
+
+    earthquakes
+        .filter { getShowingMarker(settings.dateType, settings.dateStart, settings.dateEnd, it.ORIGIN_TIME) }
+        .forEach { earthquake ->
+
+            MapMarker(earthquake, settings.magStart..settings.magEnd) {
+                onMarkerClick(it)
+            }
+        }
 }
