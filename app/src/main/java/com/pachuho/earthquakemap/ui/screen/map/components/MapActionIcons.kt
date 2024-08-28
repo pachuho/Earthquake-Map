@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
@@ -54,10 +54,10 @@ fun MapActionIcons(
         IconDivider()
 
         IconDetail(
-            imageVector = Icons.Default.LocationOn,
-            contentDescription = stringResource(R.string.my_location)
+            imageVector = Icons.Default.List,
+            contentDescription = stringResource(R.string.earthquake_list)
         ) {
-            onClickIcon(ActionIcons.Location)
+            onClickIcon(ActionIcons.List)
         }
 
         IconDivider()
@@ -118,6 +118,6 @@ fun MapActionIconsPreview() {
 
 sealed class ActionIcons {
     data object Info : ActionIcons()
-    data object Location : ActionIcons()
+    data object List : ActionIcons()
     data object Settings : ActionIcons()
 }

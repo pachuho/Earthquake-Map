@@ -2,7 +2,7 @@
     <string name="app_name">EarthquakeMap</string>
     <string name="error_download">다운로드 중 에러가 발생했습니다.\n잠시 후 다시 시도해주세요.</string>
     <string name="setting">설정</string>
-    <string name="my_location">내 위치</string>
+    <string name="earthquake_list">리스트</string>
     <string name="explain">설명</string>
     <string name="service_explain">서비스 설명</string>
     <string name="service_explain_comment">\"지진맵\"은 지진 정보를 시각적으로 확인할 수 있는 지도 서비스에요. 이 서비스를 통해 사용자는 지진의 규모, 발생 위치, 시간 등을 한눈에 파악할 수 있으며, 안전한 대응을 위한 참고 자료로 활용할 수 있어요. 서비스를 활용하여 어느 지역에서 지진이 많이 일어났는지 확인해보세요.</string>

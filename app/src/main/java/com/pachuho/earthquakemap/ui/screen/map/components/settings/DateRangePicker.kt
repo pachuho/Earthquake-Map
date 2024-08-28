@@ -117,7 +117,7 @@ fun DateRangePicker(
 
     if (showEndDateDialog) {
         DatePickerDialog(
-            startYear = currentStartDateTime.toLocalDateTime().year,
+            startYear = minDateTime.toLocalDateTime().year,
             currentDate = currentEndDateTime,
             onClickConfirm = {
                 showEndDateDialog = false

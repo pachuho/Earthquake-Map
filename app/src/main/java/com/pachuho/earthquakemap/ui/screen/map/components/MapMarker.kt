@@ -2,9 +2,15 @@ package com.pachuho.earthquakemap.ui.screen.map.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
@@ -21,15 +27,16 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalNaverMapApi::class)
+@OptIn(ExperimentalNaverMapApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MapMarker(
     earthquake: Earthquake,
-    filterMagRange: ClosedFloatingPointRange<Float>,
-    onClick: (Earthquake) -> Unit
+    filterMagRange: ClosedFloatingPointRange<Float>
 ) {
     val alpha = remember { Animatable(0f) }
     val targetAlpha = if (earthquake.MAG.toFloat() in filterMagRange) 1f else 0f
+    var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(targetAlpha) {
         alpha.animateTo(
@@ -51,10 +58,21 @@ fun MapMarker(
             captionText = ((earthquake.MAG * 10.0).roundToInt()/ 10.0).toString(),
             alpha = alpha.value,
             onClick = {
-                onClick(earthquake)
+                currentShowingMarkerInfo = earthquake
                 true
             }
         )
+    }
+
+    currentShowingMarkerInfo?.let {
+        ModalBottomSheet(
+            sheetState = bottomSheetState,
+            onDismissRequest = {
+                currentShowingMarkerInfo = null
+            }
+        ) {
+            MarkerInfo(it)
+        }
     }
 }
 

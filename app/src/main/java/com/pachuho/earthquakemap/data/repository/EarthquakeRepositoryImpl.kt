@@ -5,6 +5,8 @@ import com.pachuho.earthquakemap.data.db.EarthquakeDao
 import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.data.remote.EarthquakeService
 import com.pachuho.earthquakemap.data.utils.NetworkFailureException
+import com.pachuho.earthquakemap.ui.util.UiState
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
@@ -26,6 +28,8 @@ class EarthquakeRepositoryImpl @Inject constructor(
                 }
             }
         }
+        // 다운로드 시작
+        emit(emptyList())
 
         var isDownloading = true
         var index = 1
@@ -33,23 +37,25 @@ class EarthquakeRepositoryImpl @Inject constructor(
         Timber.d("getAllEarthquakes, start")
         while (isDownloading) {
             try {
-                val response = earthquakeService.fetchEarthquakes(oauthKey, index, index + 999)
-                index += 1000
+                val response = earthquakeService.fetchEarthquakes(oauthKey, index, index + 99)
+                index += 100
 
                 when (response.isSuccessful) {
                     true -> {
                         Timber.d("getAllEarthquakes, isSuccessful")
                         response.body()?.tbEqkKenvinfo?.rows?.let {
+                            // todo
+
                             earthquakes.addAll(it)
                         } ?: run {
-                            Timber.d("getAllEarthquakes, empty")
-                            throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
+                            Timber.d("getAllEarthquakes, empty.." + "[${response.code()}] - ${response.raw()}")
+                            throw NetworkFailureException("서울시 지진안전포털에서 데이터를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.")
                         }
                     }
 
                     false -> {
-                        Timber.e("response failure")
-                        throw NetworkFailureException("[${response.code()}] - ${response.raw()}")
+                        Timber.e("response failure" + "[${response.code()}] - ${response.raw()}")
+                        throw NetworkFailureException("서울시 지진안전포털에서 데이터를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요..")
                     }
                 }
             } catch (e: Exception) {
@@ -60,7 +66,8 @@ class EarthquakeRepositoryImpl @Inject constructor(
                     earthquakeDao.insertEarthquakes(earthquakes)
                     emit(earthquakes)
                 } else {
-                    throw NetworkErrorException("[404] - ${e.message}")
+                    Timber.d("404, error: $e")
+                    throw NetworkErrorException("네트워크가 연결되어있는지 확인해주세요.")
                 }
             }
         }

@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.naver.map.compose)
     implementation(libs.map.sdk)
     implementation(libs.play.services.location)
+    implementation(libs.naver.map.location)
 
     // Lifecycle
     implementation(libs.lifecycle.runtime.ktx)
