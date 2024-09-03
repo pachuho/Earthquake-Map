@@ -128,12 +128,4 @@ data class Settings(
     val magStart: Float = 1.0f,
     val magEnd: Float = 10.0f,
     val mapType: SettingMapType = SettingMapType.Basic
-) {
-    fun isSameForMarker(settings: Settings): Boolean {
-        return this.dateType == settings.dateType &&
-            this.dateStart == settings.dateStart &&
-            this.dateEnd == settings.dateEnd &&
-            this.magStart == settings.magStart &&
-            this.magEnd == settings.magEnd
-    }
-}
+)

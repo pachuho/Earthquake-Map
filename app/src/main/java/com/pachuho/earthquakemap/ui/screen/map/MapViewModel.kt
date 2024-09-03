@@ -30,8 +30,8 @@ class MapViewModel @Inject constructor(
     val uiState: StateFlow<UiState<List<Earthquake>>> =
         earthquakeRepository.getEarthquakes(BuildConfig.EARTHQUAKE_OAUTH_KEY)
             .map {
-                when(it.isEmpty()) {
-                    true -> UiState.Download
+                when (it.isEmpty()) {
+                    true -> UiState.Downloading
                     false -> UiState.Success(it)
                 }
             }
