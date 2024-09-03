@@ -24,6 +24,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
+import com.naver.maps.map.compose.CameraPositionState
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.compose.MapProperties
 import com.naver.maps.map.compose.MapUiSettings
@@ -53,42 +54,49 @@ fun MapRoute(
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val settingFlow = viewModel.settingsFlow.collectAsStateWithLifecycle().value
-    val earthquakesState = mutableListOf<Earthquake>()
+    val seoul by remember { mutableStateOf(LatLng(37.532600, 127.024612)) }
+    val cameraPositionState = rememberCameraPositionState { position = CameraPosition(seoul, 7.0) }
 
     LaunchedEffect(true) {
         viewModel.errorFlow.collectLatest { throwable ->
+            Timber.i("Error, ${throwable.message}")
             throwable.message?.let { onSnackBar(it) }
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        EarthquakeMap(earthquakesState, settingFlow)
-    }
-
     when (uiState.value) {
-        is UiState.Loading -> {}
-        is UiState.Download -> {
-            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+        is UiState.Loading -> {
+            Timber.i("Loading")
+        }
+
+        is UiState.Downloading -> {
+            Timber.i("Downloading")
 
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                LottieAnimation(
-                    composition = composition,
-                    iterations = LottieConstants.IterateForever,
-                    contentScale = ContentScale.FillHeight
-                )
+                AnimationLoader()
             }
         }
+
         is UiState.Success -> {
+            Timber.i("Success")
             uiState.value.successOrNull()?.let { earthquakes ->
-                earthquakesState.addAll(earthquakes)
+                EarthquakeMap(cameraPositionState, earthquakes, settingFlow)
                 MapScreenComponents(settingFlow) { result ->
                     when (result) {
                         is SettingResult.DateType -> SettingResult.DateType(result.dateType)
-                        is SettingResult.DateStartAndEnd -> SettingResult.DateStartAndEnd(result.start, result.end)
-                        is SettingResult.MagnitudeRange -> SettingResult.MagnitudeRange(result.start, result.end)
+                        is SettingResult.DateStartAndEnd -> SettingResult.DateStartAndEnd(
+                            result.start,
+                            result.end
+                        )
+
+                        is SettingResult.MagnitudeRange -> SettingResult.MagnitudeRange(
+                            result.start,
+                            result.end
+                        )
+
                         is SettingResult.MapType -> SettingResult.MapType(result.mapType)
                     }.let {
                         viewModel.updateSetting(it)
@@ -97,6 +105,16 @@ fun MapRoute(
             }
         }
     }
+}
+
+@Composable
+fun AnimationLoader() {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+    LottieAnimation(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        contentScale = ContentScale.FillHeight
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -161,24 +179,29 @@ private fun MapScreenComponents(
 @OptIn(ExperimentalNaverMapApi::class)
 @Composable
 private fun EarthquakeMap(
+    cameraPositionState: CameraPositionState,
     earthquakes: List<Earthquake>,
     settings: Settings
 ) {
-    Timber.e("EarthquakeMap")
-
-    val seoul by remember { mutableStateOf(LatLng(37.532600, 127.024612)) }
-    val cameraPositionState = rememberCameraPositionState { position = CameraPosition(seoul, 7.0) }
+    Timber.e("EarthquakeMap, earthquakes size: ${earthquakes.size}")
+    var isShowingMarker by remember { mutableStateOf(false) }
 
     NaverMap(
         modifier = Modifier.fillMaxSize(),
         locationSource = rememberFusedLocationSource(),
-        properties = MapProperties(mapType = settings.mapType.find()),
+        properties = MapProperties(settings.mapType.find()),
         uiSettings = MapUiSettings(
             isLocationButtonEnabled = true,
         ),
-        cameraPositionState = cameraPositionState
+        cameraPositionState = cameraPositionState,
+        onMapLoaded = {
+            Timber.e("onMapLoaded")
+            isShowingMarker = true
+        }
     ) {
-        MapMarkers(earthquakes, settings)
+        if (isShowingMarker && earthquakes.isNotEmpty()) {
+            MapMarkers(earthquakes, settings)
+        }
     }
 }
 
@@ -187,10 +210,17 @@ private fun MapMarkers(
     earthquakes: List<Earthquake>,
     settings: Settings
 ) {
-    Timber.e("MapMarkers, settings: $settings")
+    Timber.e("MapMarkers")
 
     earthquakes
-        .filter { getShowingMarker(settings.dateType, settings.dateStart, settings.dateEnd, it.ORIGIN_TIME) }
+        .filter {
+            getShowingMarker(
+                settings.dateType,
+                settings.dateStart,
+                settings.dateEnd,
+                it.ORIGIN_TIME
+            )
+        }
         .forEach { earthquake ->
             MapMarker(earthquake, settings.magStart..settings.magEnd)
         }
