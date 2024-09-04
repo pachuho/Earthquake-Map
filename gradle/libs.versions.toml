@@ -24,6 +24,7 @@ room = "2.6.1"
 material3-android = "1.2.1"
 timber = "5.0.0"
 tedpermissionCoroutine = "3.3.0"
+navigation-compose = "2.7.7"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -48,6 +49,7 @@ ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 
 hilt = { group = 'com.google.dagger', name = 'hilt-android', version.ref = "hilt"}
 androidx-hilt = { group = 'androidx.hilt', name = 'hilt-navigation-compose', version.ref = "hilt-navigation"}
