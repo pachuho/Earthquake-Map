@@ -50,7 +50,8 @@ import timber.log.Timber
 @Composable
 fun MapRoute(
     viewModel: MapViewModel = hiltViewModel(),
-    onSnackBar: (message: String) -> Unit
+    onSnackBar: (message: String) -> Unit,
+    onNavigateToTable: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val settingFlow = viewModel.settingsFlow.collectAsStateWithLifecycle().value
@@ -84,7 +85,10 @@ fun MapRoute(
             Timber.i("Success")
             uiState.value.successOrNull()?.let { earthquakes ->
                 EarthquakeMap(cameraPositionState, earthquakes, settingFlow)
-                MapScreenComponents(settingFlow) { result ->
+                MapScreenComponents(
+                    settings = settingFlow,
+                    onNavigateToTable = onNavigateToTable
+                ) { result ->
                     when (result) {
                         is SettingResult.DateType -> SettingResult.DateType(result.dateType)
                         is SettingResult.DateStartAndEnd -> SettingResult.DateStartAndEnd(
@@ -121,6 +125,7 @@ fun AnimationLoader() {
 @Composable
 private fun MapScreenComponents(
     settings: Settings,
+    onNavigateToTable: () -> Unit,
     onSettingResult: (SettingResult) -> Unit
 ) {
     var isShowingInfo by remember { mutableStateOf(false) }
@@ -137,7 +142,7 @@ private fun MapScreenComponents(
         ) { iconGroup ->
             when (iconGroup) {
                 is ActionIcons.Info -> isShowingInfo = !isShowingInfo
-                is ActionIcons.List -> {}
+                is ActionIcons.List -> onNavigateToTable()
                 is ActionIcons.Settings -> isShowingSettings = !isShowingSettings
             }
         }
