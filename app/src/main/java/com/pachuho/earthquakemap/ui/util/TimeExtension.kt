@@ -13,7 +13,8 @@ private fun getTimeFormatter() = DateTimeFormatter
 fun getCurrentTimeAsLong(): Long = LocalDateTime.now().format(getTimeFormatter()).toLong()
 
 fun Long.toLocalDateTimeAsString(): String {
-    return this.toLocalDateTime().format(getTimeFormatter())
+    val outputFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm:ss")
+    return this.toLocalDateTime().format(outputFormatter)
 }
 
 fun Long.toLocalDateTime(): LocalDateTime {
