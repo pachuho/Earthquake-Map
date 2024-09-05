@@ -7,8 +7,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -196,6 +199,7 @@ private fun EarthquakeMap(
 ) {
     Timber.e("EarthquakeMap, earthquakes size: ${earthquakes.size}")
     val context = LocalContext.current
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var clusterManager by remember { mutableStateOf<TedNaverClustering<Earthquake>?>(null) }
     var isShowingMarker by remember { mutableStateOf(false) }
     var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
@@ -221,6 +225,8 @@ private fun EarthquakeMap(
                     clusterManager = TedNaverClustering.with<Earthquake>(context, map)
                         .markerClickListener { currentShowingMarkerInfo = it }
                         .customMarker { getCustomMaker(it) }
+                        .clickToCenter(false)
+                        .minClusterSize(15)
                         .make()
                 }
 
@@ -233,6 +239,7 @@ private fun EarthquakeMap(
 
         currentShowingMarkerInfo?.let {
             ModalBottomSheet(
+                sheetState = bottomSheetState,
                 onDismissRequest = {
                     currentShowingMarkerInfo = null
                 }
