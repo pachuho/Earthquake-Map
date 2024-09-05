@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import ted.gun0912.clustering.clustering.TedClusterItem
+import ted.gun0912.clustering.geometry.TedLatLng
 
 @Entity
 @JsonClass(generateAdapter = true)
@@ -22,4 +24,8 @@ data class Earthquake(
     @field:Json(name = "REGDATE") val REGDATE: String,        // 등록일자
     @field:Json(name = "KMA_EQ_NO") val KMA_EQ_NO: String,      // 지진번호(기상청)
     @field:Json(name = "ORIGIN_DEPTH") val ORIGIN_DEPTH: Int    // 깊이 (단위: KM, 예: 9)
-)
+): TedClusterItem {
+    override fun getTedLatLng(): TedLatLng {
+        return TedLatLng(LAT, LON)
+    }
+}

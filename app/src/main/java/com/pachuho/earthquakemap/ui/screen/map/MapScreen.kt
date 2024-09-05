@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,6 +26,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.compose.CameraPositionState
+import com.naver.maps.map.compose.DisposableMapEffect
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.compose.MapProperties
 import com.naver.maps.map.compose.MapUiSettings
@@ -38,13 +40,16 @@ import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.ui.screen.map.components.ActionIcons
 import com.pachuho.earthquakemap.ui.screen.map.components.MapActionIcons
 import com.pachuho.earthquakemap.ui.screen.map.components.MapInfo
-import com.pachuho.earthquakemap.ui.screen.map.components.MapMarker
 import com.pachuho.earthquakemap.ui.screen.map.components.MapSettings
-import com.pachuho.earthquakemap.ui.screen.map.components.getShowingMarker
+import com.pachuho.earthquakemap.ui.screen.map.components.MarkerInfo
+import com.pachuho.earthquakemap.ui.screen.map.components.filterMarkers
+import com.pachuho.earthquakemap.ui.screen.map.components.getCustomMaker
+import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType.Companion.find
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
 import kotlinx.coroutines.flow.collectLatest
+import ted.gun0912.clustering.naver.TedNaverClustering
 import timber.log.Timber
 
 @Composable
@@ -84,7 +89,8 @@ fun MapRoute(
         is UiState.Success -> {
             Timber.i("Success")
             uiState.value.successOrNull()?.let { earthquakes ->
-                EarthquakeMap(cameraPositionState, earthquakes, settingFlow)
+                val filteredEarthquakes = filterMarkers(earthquakes, settingFlow)
+                EarthquakeMap(cameraPositionState, filteredEarthquakes, settingFlow.mapType)
                 MapScreenComponents(
                     settings = settingFlow,
                     onNavigateToTable = onNavigateToTable
@@ -181,20 +187,23 @@ private fun MapScreenComponents(
     }
 }
 
-@OptIn(ExperimentalNaverMapApi::class)
+@OptIn(ExperimentalNaverMapApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun EarthquakeMap(
     cameraPositionState: CameraPositionState,
     earthquakes: List<Earthquake>,
-    settings: Settings
+    mapType: SettingMapType
 ) {
     Timber.e("EarthquakeMap, earthquakes size: ${earthquakes.size}")
+    val context = LocalContext.current
+    var clusterManager by remember { mutableStateOf<TedNaverClustering<Earthquake>?>(null) }
     var isShowingMarker by remember { mutableStateOf(false) }
+    var currentShowingMarkerInfo by remember { mutableStateOf<Earthquake?>(null) }
 
     NaverMap(
         modifier = Modifier.fillMaxSize(),
         locationSource = rememberFusedLocationSource(),
-        properties = MapProperties(settings.mapType.find()),
+        properties = MapProperties(mapType.find()),
         uiSettings = MapUiSettings(
             isLocationButtonEnabled = true,
         ),
@@ -205,28 +214,31 @@ private fun EarthquakeMap(
         }
     ) {
         if (isShowingMarker && earthquakes.isNotEmpty()) {
-            MapMarkers(earthquakes, settings)
+            DisposableMapEffect(earthquakes) { map ->
+                Timber.e("Marker Update")
+
+                if (clusterManager == null) {
+                    clusterManager = TedNaverClustering.with<Earthquake>(context, map)
+                        .markerClickListener { currentShowingMarkerInfo = it }
+                        .customMarker { getCustomMaker(it) }
+                        .make()
+                }
+
+                clusterManager?.addItems(earthquakes)
+                onDispose {
+                    clusterManager?.clearItems()
+                }
+            }
+        }
+
+        currentShowingMarkerInfo?.let {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    currentShowingMarkerInfo = null
+                }
+            ) {
+                MarkerInfo(it)
+            }
         }
     }
-}
-
-@Composable
-private fun MapMarkers(
-    earthquakes: List<Earthquake>,
-    settings: Settings
-) {
-    Timber.e("MapMarkers")
-
-    earthquakes
-        .filter {
-            getShowingMarker(
-                settings.dateType,
-                settings.dateStart,
-                settings.dateEnd,
-                it.ORIGIN_TIME
-            )
-        }
-        .forEach { earthquake ->
-            MapMarker(earthquake, settings.magStart..settings.magEnd)
-        }
 }

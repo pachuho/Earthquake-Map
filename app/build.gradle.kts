@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.map.sdk)
     implementation(libs.play.services.location)
     implementation(libs.naver.map.location)
+    implementation(libs.tedclustering.naver)
 
     // Lifecycle
     implementation(libs.lifecycle.runtime.ktx)
