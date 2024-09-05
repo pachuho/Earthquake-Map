@@ -4,7 +4,6 @@ import com.naver.maps.map.compose.MapType
 
 enum class SettingMapType(val value: String) {
     Basic("기본"),
-    Navi("네비게이션"),
     Hybrid("위성"),
     Terrain("지형도");
 
@@ -19,7 +18,6 @@ enum class SettingMapType(val value: String) {
                 ?.let {
                     when (it) {
                         Basic -> MapType.Basic
-                        Navi -> MapType.Navi
                         Hybrid -> MapType.Hybrid
                         Terrain -> MapType.Terrain
                     }

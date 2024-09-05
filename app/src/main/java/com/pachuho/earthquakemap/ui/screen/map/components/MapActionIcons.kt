@@ -51,14 +51,15 @@ fun MapActionIcons(
             onClickIcon(ActionIcons.Info)
         }
 
-        IconDivider()
-
-        IconDetail(
-            imageVector = Icons.Default.List,
-            contentDescription = stringResource(R.string.earthquake_list)
-        ) {
-            onClickIcon(ActionIcons.List)
-        }
+        // todo after push alarm
+//        IconDivider()
+//
+//        IconDetail(
+//            imageVector = Icons.Default.List,
+//            contentDescription = stringResource(R.string.earthquake_list)
+//        ) {
+//            onClickIcon(ActionIcons.List)
+//        }
 
         IconDivider()
 
