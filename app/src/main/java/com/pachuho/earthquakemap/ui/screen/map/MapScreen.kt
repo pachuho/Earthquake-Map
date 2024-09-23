@@ -2,8 +2,10 @@ package com.pachuho.earthquakemap.ui.screen.map
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
@@ -59,6 +61,7 @@ import com.pachuho.earthquakemap.ui.screen.map.components.filterMarkers
 import com.pachuho.earthquakemap.ui.screen.map.components.getCustomMaker
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType
 import com.pachuho.earthquakemap.ui.screen.map.components.settings.SettingMapType.Companion.find
+import com.pachuho.earthquakemap.ui.util.SpacerLarge
 import com.pachuho.earthquakemap.ui.util.UiState
 import com.pachuho.earthquakemap.ui.util.successOrNull
 import kotlinx.coroutines.flow.collectLatest
@@ -150,23 +153,27 @@ fun AnimationLoader(isShowTryButton: Boolean) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
-            val isLottieLoaded = composition != null
-            LottieAnimation(
-                composition = composition,
-                iterations = LottieConstants.IterateForever,
-                contentScale = ContentScale.FillHeight
-            )
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+        val isLottieLoaded = composition != null
 
-            if (isLottieLoaded && !isShowTryButton) {
+        LottieAnimation(
+            composition = composition,
+            iterations = LottieConstants.IterateForever,
+            contentScale = ContentScale.FillHeight,
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+        if (isLottieLoaded && !isShowTryButton) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
                 Text(
-                    text = "서울 열린데이터 광장에서 지진 데이터를 불러오고 있어요",
+                    text = stringResource(R.string.getting_earthquake_data),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                SpacerLarge()
             }
         }
     }

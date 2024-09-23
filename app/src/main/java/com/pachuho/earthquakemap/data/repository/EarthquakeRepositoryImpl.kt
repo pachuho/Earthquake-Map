@@ -1,6 +1,8 @@
 package com.pachuho.earthquakemap.data.repository
 
 import android.accounts.NetworkErrorException
+import com.pachuho.earthquakemap.EarthquakeApplication
+import com.pachuho.earthquakemap.R
 import com.pachuho.earthquakemap.data.datasource.UpdatePreferencesDataSource
 import com.pachuho.earthquakemap.data.db.EarthquakeDao
 import com.pachuho.earthquakemap.data.model.Earthquake
@@ -17,7 +19,8 @@ import javax.inject.Inject
 class EarthquakeRepositoryImpl @Inject constructor(
     private val earthquakeService: EarthquakeService,
     private val earthquakeDao: EarthquakeDao,
-    private val updatePreferencesDataSource: UpdatePreferencesDataSource
+    private val updatePreferencesDataSource: UpdatePreferencesDataSource,
+    private val application: EarthquakeApplication
 ) : EarthquakeRepository {
 
     override fun getEarthquakes(oauthKey: String) = flow {
@@ -76,13 +79,13 @@ class EarthquakeRepositoryImpl @Inject constructor(
 
                         } ?: run {
                             Timber.d("getAllEarthquakes, empty.." + "[${response.code()}] - ${response.raw()}")
-                            throw NetworkFailureException("서울시 지진안전포털에서 데이터를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.")
+                            throw NetworkFailureException(application.getString(R.string.network_error_description_response_empty))
                         }
                     }
 
                     false -> {
                         Timber.e("response failure" + "[${response.code()}] - ${response.raw()}")
-                        throw NetworkFailureException("서울시 지진안전포털에서 데이터를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요..")
+                        throw NetworkFailureException(application.getString(R.string.network_error_description_resonpse_fail))
                     }
                 }
             } catch (e: JsonDataException) {
@@ -96,15 +99,15 @@ class EarthquakeRepositoryImpl @Inject constructor(
                     emit(earthquakes)
                 } else {
                     Timber.d("getAllEarthquakes, catch: $e")
-                    throw NetworkErrorException("알 수 없는 문제가 발생했어요.")
+                    throw NetworkErrorException(application.getString(R.string.network_error_description_unknown))
                 }
             } catch (e: SocketTimeoutException) {
                 Timber.d("getAllEarthquakes, catch: $e")
-                throw NetworkErrorException("서울시에서 데이터를 불러올 수 없어요.\n잠시 후 다시 시도하거나 네트워크를 확인해주세요.")
+                throw NetworkErrorException(application.getString(R.string.network_error_description_socket_timeout))
             }
             catch (e: Exception) {
                 Timber.d("getAllEarthquakes, catch: $e")
-                throw NetworkErrorException("네트워크가 연결되어있는지 확인해주세요.")
+                throw NetworkErrorException(application.getString(R.string.network_error_description_exception))
             }
         }
     }
@@ -113,9 +116,5 @@ class EarthquakeRepositoryImpl @Inject constructor(
         LocalDateTime.now().run {
             updatePreferencesDataSource.lastUpdateDateTime = (year.toString() + monthValue.toString().padStart(2, '0') + dayOfMonth.toString().padStart(2, '0')).toInt()
         }
-    }
-
-    companion object {
-        const val MAX_ATTEMPTS = 3
     }
 }

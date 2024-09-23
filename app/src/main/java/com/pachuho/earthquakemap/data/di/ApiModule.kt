@@ -1,5 +1,7 @@
 package com.pachuho.earthquakemap.data.di
 
+import android.content.Context
+import com.pachuho.earthquakemap.EarthquakeApplication
 import com.pachuho.earthquakemap.data.interceptor.LoggerInterceptor
 import com.pachuho.earthquakemap.data.remote.EarthquakeService
 import com.pachuho.earthquakemap.data.remote.UrlConstants.BASE_URL
@@ -9,6 +11,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -19,6 +22,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApiModule {
+
+    @Provides
+    @Singleton
+    fun provideApplication(@ApplicationContext app: Context): EarthquakeApplication {
+        return app as EarthquakeApplication
+    }
 
     @Provides
     @Singleton

@@ -9,7 +9,7 @@
     <string name="earthquake_mag_color">지진 규모별 색상</string>
     <string name="data_source">데이터 출처</string>
     <string name="seoul_open_api_name">서울 열린데이터 광장</string>
-    <string name="info">정보정보</string>
+    <string name="info">정보</string>
     <string name="setting_map">지도 설정</string>
     <string name="earthquake_mag_filtering">지진 규모 필터링</string>
     <string name="map_type">지도 타입</string>
@@ -20,4 +20,11 @@
     <string name="month">월</string>
     <string name="day">일</string>
     <string name="retry">재시도</string>
+    <string name="getting_earthquake_data">서울 열린데이터 광장에서\n과거 지진 데이터를 불러오고 있어요.</string>
+    <string name="setting_query_datetime">조회 기간 설정</string>
+    <string name="network_error_description_response_empty">서울시에서 데이터를 보내고 있지 않아요.\n잠시 후 다시 시도해 주세요.</string>
+    <string name="network_error_description_resonpse_fail">서울시에서 데이터를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.</string>
+    <string name="network_error_description_unknown">알 수 없는 문제가 발생했어요.\n잠시 후 다시 시도해 주세요.</string>
+    <string name="network_error_description_socket_timeout">데이터를 불러올 수 없어요.\n네트워크 상태를 확인해 주세요.</string>
+    <string name="network_error_description_exception">네트워크가 연결되어있는지 확인해주세요.</string>
 </resources>

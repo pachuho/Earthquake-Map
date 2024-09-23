@@ -51,16 +51,6 @@ fun MapActionIcons(
             onClickIcon(ActionIcons.Info)
         }
 
-        // todo after push alarm
-//        IconDivider()
-//
-//        IconDetail(
-//            imageVector = Icons.Default.List,
-//            contentDescription = stringResource(R.string.earthquake_list)
-//        ) {
-//            onClickIcon(ActionIcons.List)
-//        }
-
         IconDivider()
 
         IconDetail(
@@ -94,7 +84,7 @@ fun IconDetail(
             .padding(5.dp)
             .background(Color.Transparent, shape = CircleShape)
             .clickable(
-                onClick = onClick, // 클릭 이벤트 처리
+                onClick = onClick,
                 indication = rememberRipple(bounded = false),
                 interactionSource = remember { MutableInteractionSource() }
             )

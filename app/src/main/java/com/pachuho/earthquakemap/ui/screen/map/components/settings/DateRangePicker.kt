@@ -44,7 +44,7 @@ fun DateRangePicker(
     ) {
         Text(
             modifier = Modifier.padding(horizontal = 4.dp),
-            text = "조회 기간 설정",
+            text = stringResource(R.string.setting_query_datetime),
             style = MaterialTheme.typography.titleMedium,
         )
         Row(
