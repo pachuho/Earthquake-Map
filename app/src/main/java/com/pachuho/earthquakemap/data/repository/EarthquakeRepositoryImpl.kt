@@ -7,8 +7,10 @@ import com.pachuho.earthquakemap.data.model.Earthquake
 import com.pachuho.earthquakemap.data.remote.EarthquakeService
 import com.pachuho.earthquakemap.data.utils.NetworkFailureException
 import com.pachuho.earthquakemap.data.utils.isToday
+import com.squareup.moshi.JsonDataException
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
+import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -83,7 +85,7 @@ class EarthquakeRepositoryImpl @Inject constructor(
                         throw NetworkFailureException("서울시 지진안전포털에서 데이터를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요..")
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: JsonDataException) {
                 Timber.d("getAllEarthquakes, catch: $e")
                 isDownloading = false
 
@@ -93,9 +95,16 @@ class EarthquakeRepositoryImpl @Inject constructor(
                     Timber.i("data download finish")
                     emit(earthquakes)
                 } else {
-                    Timber.e("404, error: $e")
-                    throw NetworkErrorException("네트워크가 연결되어있는지 확인해주세요.")
+                    Timber.d("getAllEarthquakes, catch: $e")
+                    throw NetworkErrorException("알 수 없는 문제가 발생했어요.")
                 }
+            } catch (e: SocketTimeoutException) {
+                Timber.d("getAllEarthquakes, catch: $e")
+                throw NetworkErrorException("서울시에서 데이터를 불러올 수 없어요.\n잠시 후 다시 시도하거나 네트워크를 확인해주세요.")
+            }
+            catch (e: Exception) {
+                Timber.d("getAllEarthquakes, catch: $e")
+                throw NetworkErrorException("네트워크가 연결되어있는지 확인해주세요.")
             }
         }
     }
@@ -104,5 +113,9 @@ class EarthquakeRepositoryImpl @Inject constructor(
         LocalDateTime.now().run {
             updatePreferencesDataSource.lastUpdateDateTime = (year.toString() + monthValue.toString().padStart(2, '0') + dayOfMonth.toString().padStart(2, '0')).toInt()
         }
+    }
+
+    companion object {
+        const val MAX_ATTEMPTS = 3
     }
 }

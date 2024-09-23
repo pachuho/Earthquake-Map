@@ -19,4 +19,5 @@
     <string name="year">년</string>
     <string name="month">월</string>
     <string name="day">일</string>
+    <string name="retry">재시도</string>
 </resources>

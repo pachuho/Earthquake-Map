@@ -1,10 +1,17 @@
 package com.pachuho.earthquakemap.ui.screen.map
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -17,8 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,6 +73,7 @@ fun MapRoute(
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val settingFlow = viewModel.settingsFlow.collectAsStateWithLifecycle().value
+    var isShowTryButton by remember { mutableStateOf(false) }
     val seoul by remember { mutableStateOf(LatLng(37.532600, 127.024612)) }
     val cameraPositionState = rememberCameraPositionState { position = CameraPosition(seoul, 7.0) }
 
@@ -70,6 +81,7 @@ fun MapRoute(
         viewModel.errorFlow.collectLatest { throwable ->
             Timber.i("Error, ${throwable.message}")
             throwable.message?.let { onSnackBar(it) }
+            isShowTryButton = true
         }
     }
 
@@ -81,12 +93,7 @@ fun MapRoute(
         is UiState.Downloading -> {
             Timber.i("Downloading")
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                AnimationLoader()
-            }
+            AnimationLoader(isShowTryButton)
         }
 
         is UiState.Success -> {
@@ -118,16 +125,51 @@ fun MapRoute(
             }
         }
     }
+
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        if (isShowTryButton) {
+            Button(
+                modifier = Modifier.padding(30.dp),
+                onClick = {
+                    isShowTryButton = false
+                    viewModel.fetchEarthquakes()
+                }) {
+                Text(text = stringResource(R.string.retry))
+            }
+        }
+    }
 }
 
 @Composable
-fun AnimationLoader() {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
-    LottieAnimation(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        contentScale = ContentScale.FillHeight
-    )
+fun AnimationLoader(isShowTryButton: Boolean) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+            val isLottieLoaded = composition != null
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                contentScale = ContentScale.FillHeight
+            )
+
+            if (isLottieLoaded && !isShowTryButton) {
+                Text(
+                    text = "서울 열린데이터 광장에서 지진 데이터를 불러오고 있어요",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
