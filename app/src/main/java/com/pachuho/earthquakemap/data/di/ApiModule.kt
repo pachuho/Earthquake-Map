@@ -60,7 +60,7 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun provideChampionService(retrofit: Retrofit): EarthquakeService {
+    fun provideEarthquakeService(retrofit: Retrofit): EarthquakeService {
         return retrofit.create(EarthquakeService::class.java)
     }
 }

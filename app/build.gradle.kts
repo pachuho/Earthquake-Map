@@ -67,7 +67,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
@@ -75,7 +74,6 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
-//    implementation(libs.material3)
     implementation(libs.androidx.material3.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
@@ -121,7 +119,4 @@ dependencies {
 
     // Timber
     implementation(libs.timber)
-
-    // Permission
-    implementation(libs.tedpermission.coroutine)
 }
